@@ -1,0 +1,504 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --mx: 0;
+  --my: 0;
+  --hud-scale: 1;
+
+  /* state-driven color (overridden by JS via setProperty on <html>) */
+  --state-rgb: 0, 212, 255;
+  --state-primary: #00d4ff;
+  --state-bright: #66e5ff;
+
+  --holo-primary: #00d4ff;
+  --holo-bright: #66e5ff;
+  --holo-deep: #0088cc;
+  --holo-gold: #f5c518;
+  --holo-red: #ff3b3b;
+  --holo-bg: #000814;
+  --holo-bg-alt: #001428;
+  --holo-text: #e0f7ff;
+  --holo-text-dim: #6fb3d2;
+  --holo-line: rgba(0, 212, 255, 0.4);
+  --holo-line-soft: rgba(0, 212, 255, 0.15);
+
+  --holo-glow-1: 0 0 20px rgba(var(--state-rgb), 0.6);
+  --holo-glow-2: 0 0 40px rgba(var(--state-rgb), 0.3);
+  --holo-glow-3: 0 0 80px rgba(var(--state-rgb), 0.15);
+  --holo-glow-inset: inset 0 0 10px rgba(var(--state-rgb), 0.4);
+  --holo-glow-stack: var(--holo-glow-inset), var(--holo-glow-1),
+    var(--holo-glow-2), var(--holo-glow-3);
+
+  --holo-text-glow: 0 0 6px rgba(var(--state-rgb), 0.9),
+    0 0 14px rgba(var(--state-rgb), 0.55), 0 0 28px rgba(var(--state-rgb), 0.3),
+    0 0 56px rgba(var(--state-rgb), 0.15);
+
+  --holo-gold-glow: 0 0 20px rgba(245, 197, 24, 0.6),
+    0 0 40px rgba(245, 197, 24, 0.3), 0 0 80px rgba(245, 197, 24, 0.15);
+
+  --holo-red-glow: 0 0 20px rgba(255, 59, 59, 0.6),
+    0 0 40px rgba(255, 59, 59, 0.3), 0 0 80px rgba(255, 59, 59, 0.15);
+
+  --holo-bg-radial: radial-gradient(
+    ellipse at center,
+    var(--holo-bg-alt) 0%,
+    var(--holo-bg) 100%
+  );
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--holo-bg);
+  color: var(--holo-text);
+  font-family: var(--font-body);
+  letter-spacing: 0.05em;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--holo-bg-radial);
+  position: relative;
+}
+
+/* ───── Global animation primitives ───── */
+
+@keyframes holo-breath {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes holo-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.4);
+  }
+}
+
+@keyframes holo-scan-y {
+  0% {
+    transform: translateY(-10%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh);
+    opacity: 0;
+  }
+}
+
+@keyframes holo-blink {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  93%,
+  97% {
+    opacity: 0.4;
+  }
+}
+
+@keyframes holo-rgb-shift {
+  0%,
+  98%,
+  100% {
+    text-shadow: var(--holo-text-glow);
+    transform: translateX(0);
+  }
+  98.5% {
+    text-shadow: -1px 0 0 var(--holo-red), 1px 0 0 var(--holo-primary);
+    transform: translateX(-0.5px);
+  }
+  99% {
+    text-shadow: 1px 0 0 var(--holo-red), -1px 0 0 var(--holo-primary);
+    transform: translateX(0.5px);
+  }
+}
+
+@keyframes holo-float-z {
+  0%,
+  100% {
+    transform: translateZ(0);
+  }
+  50% {
+    transform: translateZ(5px);
+  }
+}
+
+@keyframes holo-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes scan-beam {
+  0% {
+    transform: translateY(-3px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+@keyframes boot-grid-in {
+  0% {
+    opacity: 0;
+    transform: scale(1.04);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+}
+
+@keyframes holo-rgb-shift-tiny {
+  0%,
+  92%,
+  100% {
+    text-shadow: var(--holo-text-glow);
+    transform: translateX(0);
+  }
+  93% {
+    text-shadow:
+      -1px 0 0 rgba(255, 59, 59, 0.85),
+      1px 0 0 rgba(0, 212, 255, 0.85);
+    transform: translateX(-0.4px);
+  }
+  94% {
+    text-shadow:
+      1px 0 0 rgba(255, 59, 59, 0.85),
+      -1px 0 0 rgba(0, 212, 255, 0.85);
+    transform: translateX(0.4px);
+  }
+}
+
+@keyframes error-shake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-2px, 1px); }
+  20% { transform: translate(2px, -1px); }
+  30% { transform: translate(-1px, -1px); }
+  40% { transform: translate(1px, 1px); }
+  50% { transform: translate(-2px, 0); }
+  60% { transform: translate(2px, 0); }
+  70% { transform: translate(-1px, 1px); }
+  80% { transform: translate(1px, -1px); }
+}
+
+@keyframes holo-glitch-flash {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(-2px) skewX(-1deg);
+  }
+  25% {
+    opacity: 0.4;
+    transform: translateX(2px) skewX(1deg);
+  }
+  40% {
+    opacity: 0.85;
+    transform: translateX(-1px);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+}
+
+/* ───── Utility classes ───── */
+
+.holo-breath {
+  animation: holo-breath 4s ease-in-out infinite;
+}
+
+.holo-pulse {
+  animation: holo-pulse 2.4s ease-in-out infinite;
+}
+
+.holo-blink {
+  animation: holo-blink 5s ease-in-out infinite;
+}
+
+.holo-rgb-shift {
+  animation: holo-rgb-shift 6s linear infinite;
+}
+
+.holo-rgb-shift-tiny {
+  animation: holo-rgb-shift-tiny 7s linear infinite;
+}
+
+.holo-error-shake {
+  animation: error-shake 0.4s linear infinite;
+}
+
+/* ───── Holographic button micro-interactions ───── */
+.holo-btn {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.18s cubic-bezier(.2, .8, .2, 1),
+    box-shadow 0.22s ease,
+    background 0.22s ease,
+    color 0.22s ease;
+  cursor: pointer;
+}
+.holo-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(var(--state-rgb), 0.32) 50%,
+    transparent 100%
+  );
+  transform: translateX(-110%);
+  transition: transform 0.55s cubic-bezier(.2, .8, .2, 1);
+  z-index: 0;
+}
+.holo-btn > * {
+  position: relative;
+  z-index: 1;
+}
+.holo-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow:
+    0 0 16px rgba(var(--state-rgb), 0.7),
+    0 0 32px rgba(var(--state-rgb), 0.35);
+}
+.holo-btn:hover::before {
+  transform: translateX(110%);
+}
+.holo-btn:active:not(:disabled) {
+  transform: scale(0.96);
+  filter: brightness(1.3);
+}
+.holo-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+/* Card "materialize" entry — bottom line draws → fills → settles */
+@keyframes holo-card-materialize {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    clip-path: inset(95% 0 0 0);
+  }
+  35% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    clip-path: inset(0 0 0 0);
+  }
+}
+.holo-card-materialize {
+  animation: holo-card-materialize 0.7s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+
+/* Typewriter cursor blink */
+@keyframes holo-cursor-blink {
+  0%, 70% { opacity: 1; }
+  71%, 100% { opacity: 0; }
+}
+.holo-cursor::after {
+  content: '▍';
+  display: inline-block;
+  margin-left: 2px;
+  color: var(--state-bright);
+  animation: holo-cursor-blink 0.7s steps(1) infinite;
+  text-shadow: 0 0 4px rgba(var(--state-rgb), 0.7);
+}
+
+.holo-text-glow {
+  text-shadow: var(--holo-text-glow);
+}
+
+.holo-text-gold {
+  color: var(--holo-gold);
+  text-shadow: 0 0 6px rgba(245, 197, 24, 0.9),
+    0 0 14px rgba(245, 197, 24, 0.55), 0 0 28px rgba(245, 197, 24, 0.3),
+    0 0 56px rgba(245, 197, 24, 0.15);
+}
+
+.holo-text-red {
+  color: var(--holo-red);
+  text-shadow: 0 0 6px rgba(255, 59, 59, 0.9),
+    0 0 14px rgba(255, 59, 59, 0.55), 0 0 28px rgba(255, 59, 59, 0.3);
+}
+
+.holo-glow {
+  box-shadow: var(--holo-glow-stack);
+}
+
+.holo-panel {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 40, 80, 0.4),
+    rgba(0, 20, 40, 0.6)
+  );
+  border: 1px solid rgba(var(--state-rgb), 0.4);
+  backdrop-filter: blur(8px) saturate(180%);
+  -webkit-backdrop-filter: blur(8px) saturate(180%);
+  box-shadow:
+    inset 0 0 10px rgba(var(--state-rgb), 0.4),
+    0 0 20px rgba(var(--state-rgb), 0.55),
+    0 0 40px rgba(var(--state-rgb), 0.28),
+    0 0 80px rgba(var(--state-rgb), 0.14);
+  transition: border-color 0.55s ease, box-shadow 0.55s ease;
+}
+
+/* CRT scanline overlay (apply to panels) */
+.holo-scanlines {
+  position: relative;
+}
+.holo-scanlines::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    rgba(var(--state-rgb), 0.05) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  z-index: 1;
+  transition: background 0.55s ease;
+}
+
+/* Faint grid surface inside panels */
+.holo-inner-grid {
+  position: relative;
+}
+.holo-inner-grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: linear-gradient(
+      to right,
+      rgba(var(--state-rgb), 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(var(--state-rgb), 0.06) 1px, transparent 1px);
+  background-size: 10px 10px;
+  z-index: 0;
+  transition: background-image 0.55s ease;
+}
+
+::selection {
+  background: rgba(0, 212, 255, 0.35);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.5);
+}
+
+.holo-transcript-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@keyframes caret-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+@keyframes holo-rotate-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Suit panels — draggable via hand pinch in FACE MODE. The HandTracker
+   updates inline `translate` each frame; the transition smooths small
+   per-frame jitter without lagging the user's hand. When grabbed, the
+   panel glows brighter so the user knows it's locked on. */
+.suit-draggable {
+  will-change: translate;
+  transition:
+    box-shadow 0.18s ease-out,
+    border-color 0.18s ease-out,
+    filter 0.18s ease-out;
+}
+
+.suit-grabbed {
+  box-shadow:
+    0 0 28px rgba(180, 240, 255, 0.7),
+    inset 0 0 16px rgba(180, 240, 255, 0.22) !important;
+  border-color: rgba(220, 250, 255, 1) !important;
+  filter: brightness(1.15);
+}
+
+/* Element under the hand cursor (FACE MODE) — what a pinch / dwell will click. */
+.hand-hover {
+  outline: 2px solid rgba(245, 197, 24, 0.95) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 18px rgba(245, 197, 24, 0.55) !important;
+}
+
+/* FACE MODE: live video sits behind everything, so any glass blur is
+   recomputed every camera frame and drags the hand cursor. Turn it off. */
+html[data-face-mode='1'] * {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}

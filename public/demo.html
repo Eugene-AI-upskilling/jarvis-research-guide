@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>자비스 팝업 시연</title>
+  <style>
+    body { margin: 0; font-family: Pretendard, system-ui, sans-serif; background: #f4f6fa; color: #1a2233; }
+    header { padding: 28px 32px; background: #fff; border-bottom: 1px solid #e3e8f0; }
+    h1 { margin: 0; font-size: 22px; }
+    p.lead { margin: 6px 0 0; color: #5b6578; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; padding: 24px 32px; }
+    .card { background: #fff; border: 1px solid #e3e8f0; border-radius: 12px; padding: 18px; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+    .card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(20,40,80,.12); }
+    .tag { font-size: 12px; color: #2a6df4; font-weight: 700; }
+    .card h2 { font-size: 17px; margin: 8px 0 6px; }
+    .card span { font-size: 13px; color: #5b6578; }
+    code { background: #eef2f8; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>리서치센터 홈페이지 (시연)</h1>
+    <p class="lead">카드를 누르면 자비스가 팝업으로 떠서 설명합니다. 카드에는 <code>data-jarvis-question</code> 만 붙이면 됩니다.</p>
+  </header>
+  <main class="grid">
+    <div class="card" data-jarvis-question="주가는 왜 떨어지나요?">
+      <div class="tag">시장이 떨어질 때</div><h2>주가는 왜 떨어지나요?</h2><span>하락의 원인과 흐름</span>
+    </div>
+    <div class="card" data-jarvis-question="오늘 코스피는 왜 움직였나요?">
+      <div class="tag">오늘의 시장</div><h2>오늘 코스피, 왜 움직였나</h2><span>오늘 지수 흐름과 이유</span>
+    </div>
+    <div class="card" data-jarvis-question="보유 종목이 급락했어요. 무엇부터 확인해야 하나요?">
+      <div class="tag">내 종목이 떨어질 때</div><h2>급락했을 때 확인할 것</h2><span>당황하지 않고 점검하기</span>
+    </div>
+    <div class="card" data-jarvis-question="금리가 오르면 주가는 왜 떨어지나요?">
+      <div class="tag">알아두면 좋은 개념</div><h2>금리와 주가</h2><span>금리 인상기에 생기는 일</span>
+    </div>
+  </main>
+  <script src="/embed.js" defer></script>
+</body>
+</html>
