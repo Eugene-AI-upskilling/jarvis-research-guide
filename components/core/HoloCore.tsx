@@ -6,18 +6,21 @@ import { ArcReactor } from './ArcReactor';
 import { WireSphere } from './WireSphere';
 import { OrbitRings } from './OrbitRings';
 import { ParticleAura } from './ParticleAura';
+import { DustField } from './DustField';
 import { PostFX } from './PostFX';
 import type { JarvisState } from '@/store/jarvis-store';
 
 interface HoloCoreProps {
   color: string;
   state: JarvisState;
+  /** Home Hero: pull the camera back for room and add the dense dust field. */
+  rich?: boolean;
 }
 
-export function HoloCore({ color, state }: HoloCoreProps) {
+export function HoloCore({ color, state, rich = false }: HoloCoreProps) {
   return (
     <Canvas
-      camera={{ position: [0, 0, 4.4], fov: 45, near: 0.01, far: 50 }}
+      camera={{ position: [0, 0, rich ? 6.4 : 4.4], fov: 45, near: 0.01, far: 50 }}
       gl={{
         alpha: true,
         antialias: true,
@@ -40,6 +43,7 @@ export function HoloCore({ color, state }: HoloCoreProps) {
         <WireSphere state={state} color={color} />
         <OrbitRings state={state} color={color} />
         <ParticleAura state={state} color={color} />
+        {rich && <DustField state={state} color={color} />}
         <PostFX state={state} />
       </Suspense>
     </Canvas>

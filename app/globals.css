@@ -502,3 +502,7 @@ html[data-face-mode='1'] * {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
+
+/* Insight Lab 홈 Hero(?embed=hero): 코어만 그리고 배경은 호스트 화면을 그대로 비춘다 */
+html[data-embed="hero"], html[data-embed="hero"] body { background: transparent !important; overflow: hidden; }
+html[data-embed="hero"] body::before, html[data-embed="hero"] body::after { display: none !important; }

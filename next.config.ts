@@ -6,6 +6,8 @@ const embedOrigins = (process.env.EMBED_ALLOWED_ORIGINS ?? '').trim();
 
 const config: NextConfig = {
   reactStrictMode: true,
+  // Hide the dev-mode indicator bubble — it shows inside the Insight Lab home Hero iframe.
+  devIndicators: { buildActivity: false, appIsrStatus: false },
   async headers() {
     return [
       {

@@ -100,12 +100,39 @@ const STATE_THEMES: Record<JarvisState, StateTheme> = {
 export default function HudPage() {
   const state = useJarvisStore((s) => s.state);
   const theme = STATE_THEMES[state];
-  const { embed, question: embedQuestion } = useEmbed();
+  const { embed, mode: embedMode, question: embedQuestion } = useEmbed();
+  const [heroScale, setHeroScale] = useState(520);   // hero mode: core size in px
+
+  // Hero mode (Insight Lab home): only the core, driven by the host page's state messages.
+  useEffect(() => {
+    if (embedMode !== 'hero') return;
+    const store = useJarvisStore.getState();
+    store.setState('STANDBY');
+    const fit = () => setHeroScale(Math.round(Math.min(window.innerWidth, window.innerHeight) * 0.88));
+    fit();
+    const onMessage = (e: MessageEvent) => {
+      const d = e.data as { type?: string; state?: unknown } | null;
+      if (d?.type !== 'jarvis:state' || typeof d.state !== 'string') return;
+      const next = d.state as JarvisState;
+      if (!(next in STATE_THEMES) || next === 'BOOTING') return;
+      // The host owns the conversation, so it may jump states (e.g. a reviewed answer: STANDBY → SPEAKING).
+      // Skip the voice-loop transition table here and set the visual state directly.
+      const prev = useJarvisStore.getState().state;
+      if (prev !== next) useJarvisStore.setState({ state: next, prevState: prev });
+    };
+    window.addEventListener('message', onMessage);
+    window.addEventListener('resize', fit);
+    window.parent?.postMessage({ type: 'jarvis:ready' }, '*');
+    return () => {
+      window.removeEventListener('message', onMessage);
+      window.removeEventListener('resize', fit);
+    };
+  }, [embedMode]);
 
   // Popup mode: no boot show, answer the card's question right away, and let
   // the host page send further questions into the same popup.
   useEffect(() => {
-    if (!embed) return;
+    if (!embed || embedMode === 'hero') return;
     useJarvisStore.getState().setState('STANDBY');
     if (embedQuestion) void askQuestion(embedQuestion);
     const onMessage = (e: MessageEvent) => {
@@ -167,6 +194,33 @@ export default function HudPage() {
   const formattedTime = now
     ? `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`
     : '--:--:--';
+
+  if (embedMode === 'hero') {
+    // Same web-motion layers as the full HUD (grid, state tint, glitch, scan sweeps, cursor
+    // crosshair, corner brackets) around a centred core — minus panels, dock and boot show.
+    return (
+      <main aria-hidden style={{ position: 'fixed', inset: 0, overflow: 'hidden', perspective: 1200 }}>
+        <GridBackground />
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            zIndex: 2,
+            transition: 'background 0.55s ease',
+            background: `radial-gradient(ellipse at center, rgba(${theme.rgb},0.16) 0%, rgba(${theme.rgb},0.05) 50%, rgba(${theme.rgb},0) 90%)`,
+            mixBlendMode: 'screen',
+          }}
+        />
+        <TransitionGlitch glitchKey={glitchKey} rgb={theme.rgb} />
+        <ScanLineEdges />
+        <HorizontalSweep />
+        <MouseTrail />
+        <CornerBrackets active={state !== 'STANDBY'} inset={20} size={48} color={theme.primary} />
+        <CoreSlot theme={theme} state={state} size={heroScale} rich />
+      </main>
+    );
+  }
 
   return (
     <main
@@ -461,9 +515,13 @@ function PanelTitle({ children }: { children: React.ReactNode }) {
 function CoreSlot({
   theme,
   state,
+  size = 520,
+  rich = false,
 }: {
   theme: StateTheme;
   state: JarvisState;
+  size?: number;
+  rich?: boolean;
 }) {
   const { primary, bright, rgb, label, description } = theme;
   return (
@@ -473,8 +531,8 @@ function CoreSlot({
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        width: 520,
-        height: 520,
+        width: size,
+        height: size,
         zIndex: 5,
         pointerEvents: 'none',
       }}
@@ -486,7 +544,7 @@ function CoreSlot({
           filter: `drop-shadow(0 0 14px rgba(${rgb},0.45))`,
         }}
       >
-        <HoloCore color={primary} state={state} />
+        <HoloCore color={primary} state={state} rich={rich} />
       </div>
 
       {/* faint enclosing dashed circle (a "containment field" cue) */}
@@ -506,7 +564,7 @@ function CoreSlot({
       <div
         style={{
           position: 'absolute',
-          bottom: -10,
+          bottom: rich ? Math.round(size * 0.13) : -10,
           left: '50%',
           transform: 'translateX(-50%)',
           display: 'flex',
